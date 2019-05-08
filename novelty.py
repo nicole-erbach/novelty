@@ -28,6 +28,7 @@ def getDefaultParameters():
     parameters["posDiff"] = True
     parameters["logarithmic"] = False
     parameters["nPostReduction"] = 1
+    parameters["normalize"] = True
     
     return parameters
 
@@ -39,13 +40,13 @@ def getNovelty(wave, fs, parameters=None, **kwargs):
     if len(kwargs) > 0:
         
         # dont allow parameters-dict and keywords the same time (warning or error?)
-        if parameters != 0:
+        if parameters != None:
             print("Please dont provide parameters-dictionary and seperate parameters the same time. Abort.")
             return
             
         # check given keys and update parameters 
         parameters = getDefaultParameters()
-        for key, value in kwargs.item():
+        for key, value in kwargs.items():
             try:
                 parameters[key] = value
             except KeyError:
@@ -75,7 +76,7 @@ def getNovelty(wave, fs, parameters=None, **kwargs):
     
     energyCurves = calcEnergyCurves(spectrogramTime, spectrogramFreq, spectrogram, parameters["splitFrequencies"], parameters["overlap"])
     
-    novelty = postProcessing(energyCurves, parameters["diffLength"], parameters["posDiff"], parameters["logarithmic"], parameters["nPostReduction"])
+    novelty = postProcessing(energyCurves, parameters["diffLength"], parameters["posDiff"], parameters["logarithmic"], parameters["nPostReduction"], parameters["normalize"])
 
     return novelty
 
@@ -142,7 +143,7 @@ def calcEnergyCurves(spectrogramTime, spectrogramFreq, spectrogram, splitFrequen
     return energyCurves
 
     
-def postProcessing(energyCurves, diffLength, posDiff, logarithmic, nPostReduction):
+def postProcessing(energyCurves, diffLength, posDiff, logarithmic, nPostReduction, normalize=True):
 
     # calc diff 
     if diffLength > 0:
@@ -171,8 +172,9 @@ def postProcessing(energyCurves, diffLength, posDiff, logarithmic, nPostReductio
         novelty = novelty
 
     # normalize
-    novelty -= np.min(novelty, axis = -1)[:, None]
-    novelty /= np.max(novelty, axis = -1)[:, None]+0.00001
+    if normalize = True:
+        novelty -= np.min(novelty, axis = -1)[:, None]
+        novelty /= np.max(novelty, axis = -1)[:, None]+0.00001
 
     return novelty
 
